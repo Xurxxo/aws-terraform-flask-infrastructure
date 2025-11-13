@@ -1,0 +1,5 @@
+region        = "eu-central-1"
+ecr_image_url = "YOUR-ACCOUNT-ID.dkr.ecr.eu-central-1.amazonaws.com/flask-terminal-cv:latest"
+instance_type = "t2.micro"
+app_port      = 8000
+# key_name    = "your-key-pair-name"
