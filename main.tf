@@ -12,190 +12,255 @@ provider "aws" {
   region = var.region
 }
 
-data "aws_availability_zones" "available" {
-  state = "available"
+# Provider para ACM 
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
 }
 
-# VPC configuration
-resource "aws_vpc" "main" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_support   = true
-  enable_dns_hostnames = true
+data "aws_caller_identity" "current" {}
+
+# S3 Bucket 
+resource "aws_s3_bucket" "website" {
+  bucket = "${var.project_name}-static-site"
 
   tags = {
-    Name = "flask-cv-vpc"
+    Name    = "${var.project_name}-website"
+    Project = "flask-cv"
   }
 }
 
-# Public subnet
-resource "aws_subnet" "public" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.1.0/24"
-  map_public_ip_on_launch = true
-  availability_zone       = data.aws_availability_zones.available.names[0]
+# Block public access 
+resource "aws_s3_bucket_public_access_block" "website" {
+  bucket = aws_s3_bucket.website.id
 
-  tags = {
-    Name = "flask-cv-public-subnet"
-  }
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
-# Internet gateway for public access
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.main.id
+# Bucket policy  CloudFront
+resource "aws_s3_bucket_policy" "website" {
+  bucket = aws_s3_bucket.website.id
 
-  tags = {
-    Name = "flask-cv-igw"
-  }
-}
-
-# Route table with internet access
-resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.main.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw.id
-  }
-
-  tags = {
-    Name = "flask-cv-public-rt"
-  }
-}
-
-resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
-  route_table_id = aws_route_table.public.id
-}
-
-# Security group for web traffic
-resource "aws_security_group" "web" {
-  name        = "flask-cv-sg"
-  description = "Allow HTTP and SSH traffic"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    description = "HTTP from internet"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "SSH access"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    description = "Allow all outbound"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "flask-cv-sg"
-  }
-}
-
-# IAM role for EC2 to access ECR
-resource "aws_iam_role" "ec2_role" {
-  name = "flask-cv-ec2-role"
-
-  assume_role_policy = jsonencode({
+  policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = {
-        Service = "ec2.amazonaws.com"
+    Statement = [
+      {
+        Sid    = "AllowCloudFrontServicePrincipal"
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        }
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.website.arn}/*"
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = aws_cloudfront_distribution.website.arn
+          }
+        }
       }
-      Action = "sts:AssumeRole"
-    }]
+    ]
   })
+}
+
+# CloudFront Origin Access Control
+resource "aws_cloudfront_origin_access_control" "website" {
+  name                              = "${var.project_name}-oac"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+# CloudFront Distribution
+resource "aws_cloudfront_distribution" "website" {
+  enabled             = true
+  is_ipv6_enabled     = true
+  default_root_object = "index.html"
+  price_class         = "PriceClass_100" 
+  origin {
+    domain_name              = aws_s3_bucket.website.bucket_regional_domain_name
+    origin_id                = "S3-${aws_s3_bucket.website.id}"
+    origin_access_control_id = aws_cloudfront_origin_access_control.website.id
+  }
+
+  default_cache_behavior {
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+    cached_methods         = ["GET", "HEAD"]
+    target_origin_id       = "S3-${aws_s3_bucket.website.id}"
+
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.url_rewrite.arn
+    }
+    
+    viewer_protocol_policy = "redirect-to-https"
+    compress               = true
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl     = 0
+    default_ttl = 3600
+    max_ttl     = 86400
+
+    # Security headers
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security_headers.id
+  }
+
+  # Custom error responses
+  custom_error_response {
+    error_code         = 404
+    response_code      = 404
+    response_page_path = "/index.html"
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
 
   tags = {
-    Name = "flask-cv-ec2-role"
+    Name    = "${var.project_name}-cdn"
+    Project = "flask-cv"
   }
 }
 
-resource "aws_iam_role_policy_attachment" "ecr_read" {
-  role       = aws_iam_role.ec2_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-}
+# Security Headers Policy
+resource "aws_cloudfront_response_headers_policy" "security_headers" {
+  name = "${var.project_name}-security-headers"
 
-resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "flask-cv-ec2-profile"
-  role = aws_iam_role.ec2_role.name
-}
-
-# Get latest Amazon Linux 2023 AMI
-data "aws_ami" "amazon_linux_2023" {
-  owners      = ["amazon"]
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["al2023-ami-*-x86_64"]
+  security_headers_config {
+    content_type_options {
+      override = true
+    }
+    frame_options {
+      frame_option = "DENY"
+      override     = true
+    }
+    referrer_policy {
+      referrer_policy = "strict-origin-when-cross-origin"
+      override        = true
+    }
+    xss_protection {
+      mode_block = true
+      protection = true
+      override   = true
+    }
+    strict_transport_security {
+      access_control_max_age_sec = 31536000
+      include_subdomains         = true
+      override                   = true
+    }
+    content_security_policy {
+      content_security_policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+      override                = true
+    }
   }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
 }
 
-# EC2 instance running the Flask application
-resource "aws_instance" "web" {
-  ami                         = data.aws_ami.amazon_linux_2023.id
-  instance_type               = var.instance_type
-  subnet_id                   = aws_subnet.public.id
-  vpc_security_group_ids      = [aws_security_group.web.id]
-  associate_public_ip_address = true
-  iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
-  key_name                    = var.key_name
+# CloudWatch Log Group S3 access logs
+resource "aws_cloudwatch_log_group" "s3_access" {
+  name              = "/aws/s3/${var.project_name}"
+  retention_in_days = 7
 
   tags = {
-    Name = "flask-cv-ec2"
+    Name    = "${var.project_name}-s3-logs"
+    Project = "flask-cv"
+  }
+}
+
+# CloudWatch Alarm - High request rate
+resource "aws_cloudwatch_metric_alarm" "high_requests" {
+  alarm_name          = "${var.project_name}-high-request-rate"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "Requests"
+  namespace           = "AWS/CloudFront"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 10000
+  alarm_description   = "Alert when request rate is unusually high"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    DistributionId = aws_cloudfront_distribution.website.id
   }
 
-  user_data = base64encode(templatefile("${path.module}/user_data.sh", {
-    region        = var.region
-    ecr_image_url = var.ecr_image_url
-    app_port      = var.app_port
-  }))
-
-  depends_on = [
-    aws_internet_gateway.igw,
-    aws_route_table_association.public
-  ]
+  tags = {
+    Name    = "${var.project_name}-alarm"
+    Project = "flask-cv"
+  }
 }
 
-# Outputs
-output "web_public_ip" {
-  description = "Public IP of the EC2 instance"
-  value       = aws_instance.web.public_ip
+# AWS Budget
+resource "aws_budgets_budget" "monthly" {
+  name         = "${var.project_name}-monthly-budget"
+  budget_type  = "COST"
+  limit_amount = "20"
+  limit_unit   = "USD"
+  time_unit    = "MONTHLY"
+
+  notification {
+    comparison_operator = "GREATER_THAN"
+    threshold           = 50
+    threshold_type      = "PERCENTAGE"
+    notification_type   = "ACTUAL"
+    subscriber_email_addresses = [var.alert_email]
+  }
+
+  notification {
+    comparison_operator = "GREATER_THAN"
+    threshold           = 80
+    threshold_type      = "PERCENTAGE"
+    notification_type   = "ACTUAL"
+    subscriber_email_addresses = [var.alert_email]
+  }
+
+  notification {
+    comparison_operator = "GREATER_THAN"
+    threshold           = 100
+    threshold_type      = "PERCENTAGE"
+    notification_type   = "ACTUAL"
+    subscriber_email_addresses = [var.alert_email]
+  }
+
+  tags = {
+    Name    = "${var.project_name}-budget"
+    Project = "flask-cv"
+  }
 }
 
-output "web_public_dns" {
-  description = "Public DNS of the EC2 instance"
-  value       = aws_instance.web.public_dns
+# CloudFront Function for ruts
+resource "aws_cloudfront_function" "url_rewrite" {
+  name    = "${var.project_name}-url-rewrite"
+  runtime = "cloudfront-js-1.0"
+  comment = "Rewrite URLs to add .html extension"
+  publish = true
+  code    = <<-EOT
+function handler(event) {
+    var request = event.request;
+    var uri = request.uri;
+    
+    if (uri === '/') {
+        return request;
+    }
+    
+    if (!uri.includes('.') && !uri.endsWith('/')) {
+        request.uri = uri + '.html';
+    }
+    
+    return request;
 }
-
-output "application_url" {
-  description = "URL to access the application"
-  value       = "http://${aws_instance.web.public_ip}"
-}
-
-output "vpc_id" {
-  description = "VPC ID"
-  value       = aws_vpc.main.id
-}
-
-output "subnet_id" {
-  description = "Subnet ID"
-  value       = aws_subnet.public.id
+EOT
 }
