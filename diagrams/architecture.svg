@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="awsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#232F3E;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1A242F;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="cloudGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9900;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF6600;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="800" fill="#f5f5f5"/>
+  
+  <!-- Title -->
+  <text x="600" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#232F3E">AWS Static Website Architecture - xurxo.cloud</text>
+  
+  <!-- User -->
+  <g transform="translate(100, 350)">
+    <circle cx="40" cy="20" r="20" fill="#4A90D9"/>
+    <rect x="15" y="45" width="50" height="40" rx="5" fill="#4A90D9"/>
+    <text x="40" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#333">User</text>
+    <text x="40" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#666">Browser</text>
+  </g>
+  
+  <!-- AWS Cloud Box -->
+  <rect x="250" y="80" width="700" height="600" rx="15" fill="url(#awsGrad)" opacity="0.1" stroke="#FF9900" stroke-width="3"/>
+  <text x="600" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#FF9900">☁️ AWS Cloud</text>
+  
+  <!-- Route 53 -->
+  <g transform="translate(300, 150)" filter="url(#shadow)">
+    <rect width="120" height="80" rx="10" fill="#8C4FFF"/>
+    <text x="60" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Route 53</text>
+    <text x="60" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">DNS</text>
+    <text x="60" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#ddd">xurxo.cloud</text>
+  </g>
+  
+  <!-- ACM -->
+  <g transform="translate(300, 260)" filter="url(#shadow)">
+    <rect width="120" height="80" rx="10" fill="#DD344C"/>
+    <text x="60" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">ACM</text>
+    <text x="60" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">SSL/TLS</text>
+    <text x="60" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#ddd">🔒 HTTPS</text>
+  </g>
+  
+  <!-- CloudFront -->
+  <g transform="translate(480, 200)" filter="url(#shadow)">
+    <rect width="150" height="100" rx="10" fill="#8C4FFF"/>
+    <text x="75" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">CloudFront</text>
+    <text x="75" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">CDN Distribution</text>
+    <text x="75" y="68" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#ddd">• Global Edge</text>
+    <text x="75" y="82" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#ddd">• Security Headers</text>
+    <text x="75" y="96" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#ddd">• Caching</text>
+  </g>
+  
+  <!-- S3 Bucket -->
+  <g transform="translate(700, 200)" filter="url(#shadow)">
+    <rect width="140" height="100" rx="10" fill="#3F8624"/>
+    <text x="70" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">S3 Bucket</text>
+    <text x="70" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Static Files</text>
+    <text x="70" y="68" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#ddd">• HTML, CSS, JS</text>
+    <text x="70" y="82" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#ddd">• Images, PDF</text>
+    <text x="70" y="96" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#ddd">• Private Access</text>
+  </g>
+  
+  <!-- CloudWatch -->
+  <g transform="translate(480, 380)" filter="url(#shadow)">
+    <rect width="130" height="80" rx="10" fill="#E7157B"/>
+    <text x="65" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">CloudWatch</text>
+    <text x="65" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Monitoring</text>
+    <text x="65" y="68" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#ddd">Logs & Alarms</text>
+  </g>
+  
+  <!-- AWS Budget -->
+  <g transform="translate(650, 380)" filter="url(#shadow)">
+    <rect width="130" height="80" rx="10" fill="#C925D1"/>
+    <text x="65" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">AWS Budget</text>
+    <text x="65" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Cost Control</text>
+    <text x="65" y="68" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#ddd">$10/month limit</text>
+  </g>
+  
+  <!-- External Services Box -->
+  <rect x="250" y="520" width="700" height="130" rx="15" fill="#E8F5E9" stroke="#4CAF50" stroke-width="2"/>
+  <text x="600" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2E7D32">External Services</text>
+  
+  <!-- Namecheap -->
+  <g transform="translate(300, 560)" filter="url(#shadow)">
+    <rect width="110" height="70" rx="8" fill="#FF6D00"/>
+    <text x="55" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">Namecheap</text>
+    <text x="55" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Domain</text>
+    <text x="55" y="62" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#ffe0b2">Registrar</text>
+  </g>
+  
+  <!-- GitHub Actions -->
+  <g transform="translate(450, 560)" filter="url(#shadow)">
+    <rect width="110" height="70" rx="8" fill="#24292E"/>
+    <text x="55" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">GitHub</text>
+    <text x="55" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Actions</text>
+    <text x="55" y="62" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#999">CI/CD</text>
+  </g>
+  
+  <!-- Formspree -->
+  <g transform="translate(600, 560)" filter="url(#shadow)">
+    <rect width="110" height="70" rx="8" fill="#E91E63"/>
+    <text x="55" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">Formspree</text>
+    <text x="55" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Contact</text>
+    <text x="55" y="62" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#f8bbd9">Form API</text>
+  </g>
+  
+  <!-- Arrows -->
+  <!-- User to CloudFront -->
+  <path d="M 180 380 L 480 260" stroke="#4A90D9" stroke-width="3" fill="none" marker-end="url(#arrowBlue)"/>
+  <text x="300" y="300" font-family="Arial, sans-serif" font-size="10" fill="#4A90D9">HTTPS</text>
+  
+  <!-- Route53 to CloudFront -->
+  <line x1="420" y1="190" x2="480" y2="230" stroke="#8C4FFF" stroke-width="2"/>
+  
+  <!-- ACM to CloudFront -->
+  <line x1="420" y1="300" x2="480" y2="270" stroke="#DD344C" stroke-width="2" stroke-dasharray="5,3"/>
+  
+  <!-- CloudFront to S3 -->
+  <path d="M 630 250 L 700 250" stroke="#3F8624" stroke-width="3" fill="none"/>
+  <text x="655" y="240" font-family="Arial, sans-serif" font-size="9" fill="#3F8624">OAC</text>
+  
+  <!-- CloudFront to CloudWatch -->
+  <line x1="555" y1="300" x2="545" y2="380" stroke="#E7157B" stroke-width="2" stroke-dasharray="5,3"/>
+  
+  <!-- Namecheap to Route53 -->
+  <line x1="355" y1="560" x2="360" y2="230" stroke="#FF6D00" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="330" y="400" font-family="Arial, sans-serif" font-size="9" fill="#FF6D00" transform="rotate(-90 330,400)">Nameservers</text>
+  
+  <!-- GitHub to S3 -->
+  <path d="M 505 560 Q 600 480 770 300" stroke="#24292E" stroke-width="2" fill="none"/>
+  <text x="620" y="470" font-family="Arial, sans-serif" font-size="9" fill="#24292E">Deploy</text>
+  
+  <!-- GitHub to CloudFront -->
+  <path d="M 505 560 Q 520 450 555 300" stroke="#24292E" stroke-width="2" fill="none" stroke-dasharray="5,3"/>
+  <text x="500" y="440" font-family="Arial, sans-serif" font-size="9" fill="#666">Invalidate</text>
+  
+  <!-- Legend -->
+  <g transform="translate(920, 150)">
+    <rect width="180" height="140" rx="8" fill="white" stroke="#ccc" stroke-width="1"/>
+    <text x="90" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#333">Legend</text>
+    <line x1="20" y1="45" x2="50" y2="45" stroke="#4A90D9" stroke-width="3"/>
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="10" fill="#333">User Request</text>
+    <line x1="20" y1="70" x2="50" y2="70" stroke="#3F8624" stroke-width="3"/>
+    <text x="60" y="75" font-family="Arial, sans-serif" font-size="10" fill="#333">Data Flow</text>
+    <line x1="20" y1="95" x2="50" y2="95" stroke="#666" stroke-width="2" stroke-dasharray="5,3"/>
+    <text x="60" y="100" font-family="Arial, sans-serif" font-size="10" fill="#333">Config/Metrics</text>
+    <line x1="20" y1="120" x2="50" y2="120" stroke="#24292E" stroke-width="2"/>
+    <text x="60" y="125" font-family="Arial, sans-serif" font-size="10" fill="#333">CI/CD Deploy</text>
+  </g>
+  
+  <!-- Cost Summary -->
+  <g transform="translate(920, 310)">
+    <rect width="180" height="100" rx="8" fill="white" stroke="#ccc" stroke-width="1"/>
+    <text x="90" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#333">Monthly Cost</text>
+    <text x="20" y="50" font-family="Arial, sans-serif" font-size="10" fill="#666">Route 53: $0.50</text>
+    <text x="20" y="68" font-family="Arial, sans-serif" font-size="10" fill="#666">S3 + CloudFront: ~$0.05</text>
+    <text x="20" y="86" font-family="Arial, sans-serif" font-size="10" fill="#333" font-weight="bold">Total: ~$0.55/month</text>
+  </g>
+  
+</svg>
